@@ -1,0 +1,7 @@
+.card-block {
+	overflow-y: scroll;
+}
+
+.is-invalid{
+	border-color: blue !important;
+}

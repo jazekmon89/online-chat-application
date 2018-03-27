@@ -1,0 +1,127 @@
+<html>
+	<head>
+		<title>ChatMit!</title>
+		<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
+		<link rel="stylesheet" type="text/css" href="css/bootstrap-grid.min.css" />
+		<link rel="stylesheet" type="text/css" href="css/bootstrap-reboot.min.css" />
+		<link rel="stylesheet" type="text/css" href="css/custom.css" />
+	</head>
+	<body>
+		<div class="container w-50">
+			<div class="row">
+				<div id="chatWrapper" class="col-md-12 col-lg-12 col-xl-12">
+					<div class="card">
+						<div class="card-header">
+							<h4 class="text-center"> Chat Meet! </h4>
+						</div>
+						<div class="card-block h-50">
+							<div id="chat-body">
+
+							</div>
+						</div>
+
+						<ul class="list-group list-group-flush">
+							<li class="list-group-item">
+								<div class="form-group">
+									<div class="col-md-10 d-inline-block">
+										<label for="message">Name:</label>
+										<input type="text" class="form-control" id="name" placeholder="Enter your name.">
+									</div>
+									<div class="col-md-10 d-inline-block">
+										<label for="message">Message:</label>
+										<input type="text" class="form-control " id="message" placeholder="Enter your message.">
+									</div>
+									<div class="col-md-1 d-inline-block">
+										<button class="btn btn-primary btn-send">Send</button>
+									</div>
+								</div>
+							</li>
+						</ul>
+						<div class="card-footer">
+							<div class="text-center">Powered By <a href="https://firebase.com" target="_blank">Firebase</a></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
+		<script type="text/javascript" src="js/bootstrap.min.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/4.11.0/firebase.js"></script>
+		<script>
+		  // Initialize Firebase
+		  /*var config = {
+		    apiKey: "AIzaSyAZyrUPaLPy_YNEs8CCz1tTgQgaqobHZjg",
+		    authDomain: "chat-app-a65a0.firebaseapp.com",
+		    databaseURL: "https://chat-app-a65a0.firebaseio.com",
+		    projectId: "chat-app-a65a0",
+		    storageBucket: "chat-app-a65a0.appspot.com",
+		    messagingSenderId: "689998064261"
+		  };
+		  firebase.initializeApp(config);*/
+
+		  function addForeignMessage(message_time, name, message){
+		  	$("#chat-body").append('<div class="card-body text-left w-100"><h5>'+name+'</h5><div class="w-100">'+message+'</div><small>'+message_time+'</small></div>');
+		  }
+
+		  function addOwnMessage(message_time, name, message){
+		  	$("#chat-body").append('<div class="card-body text-right w-100"><h5>'+name+'</h5><div class="w-100">'+message+'</div><small>'+message_time+'</small></div>');
+		  }
+
+		  function clearMessage(){
+		  	$("#message").val('');
+		  	$(".btn-send").removeAttr('disabled');
+		  }
+
+		  function saveToChannel(name, message){
+		  	let timestamp = + new Date();
+		  	let data = {
+		  		'name': name,
+		  		'message': message
+		  	};
+		  	channel.child('messages').child(timestamp).set(data).then(function(){
+		  		// clear the text fields.
+		  		clearMessage();
+		  	});
+		  }
+
+		  $(".btn-send").on('click', function(){
+		  	let is_invalid = false;
+		  	let name = $("#name").val();
+		  	let message = $("#message").val();
+		  	if(name.length == 0){
+		  		$("#name").addClass('is-invalid');
+		  		is_invalid = true;
+		  	}else
+		  		$("#name").removeClass('is-invalid');
+
+		  	if(message.length == 0){
+		  		$("#message").addClass('is-invalid');
+		  		is_invalid = true;
+		  	}else
+		  		$("#message").removeClass('is-invalid');
+
+		  	if(is_invalid){
+		  		alert('Invalid input!');
+		  		return false;
+		  	}
+		  	$(".btn-send").attr('disabled',true);
+		  	saveToChannel(name, message);
+		  });
+
+		  // get data from database
+		  var channel = firebase.database().ref('channel1');
+		  channel.child('messages').on('child_added', function(snapshot){
+				snapshot.forEach(function(childSnapshot){
+					let message_time = new Date(snapshot.ref.getKey());
+					let message_time_formatted = message_time.getHours()+':'+message_time.getMinutes();
+					let message_info = snapshot.val();
+					if(message_info.name != $("#name").val())
+						addForeignMessage(message_time_formatted, message_info.name, message_info.message);
+					else
+						addOwnMessage(message_time_formatted, message_info.name, message_info.message);
+				});
+				chatScrollDown();
+			});
+		</script>
+	</body>
+</html>
